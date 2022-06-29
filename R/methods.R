@@ -14,6 +14,7 @@ methods_ui <- function(id) {
       NS(id, "optimization_target"),
       "Optimization target",
       choices = list(
+        "Number of included genes" = "combined",
         "Mean rank" = "mean",
         "Median rank" = "median",
         "First rank" = "min",
