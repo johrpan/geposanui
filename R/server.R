@@ -267,48 +267,5 @@ server <- function(options) {
         digits = 1
       )
     })
-
-    output$disgenet <- DT::renderDT({
-      withProgress(
-        message = "Querying DisGeNET",
-        value = 0.0,
-        { # nolint
-          setProgress(0.2)
-
-          all_gene_names <- unique(results()[name != "", name])
-          filtered_gene_names <- unique(results_filtered()[name != "", name])
-
-          diseases <- suppressMessages(
-            disgenet2r::disease_enrichment(
-              all_gene_names,
-              custom_universe = list(filtered_gene_names)
-            )
-          )
-
-          data <- data.table(diseases@qresult)
-
-          data <- data[, .(Description, Ratio, BgRatio, pvalue)]
-          setorder(data, pvalue)
-
-          dt <- DT::datatable(
-            data,
-            rownames = FALSE,
-            colnames = c(
-              "Disease",
-              "Query ratio",
-              "Total ratio",
-              "p-value"
-            ),
-            options = list(
-              pageLength = 25
-            )
-          )
-
-          dt <- DT::formatRound(dt, "pvalue", digits = 4)
-
-          dt
-        }
-      )
-    })
   }
 }

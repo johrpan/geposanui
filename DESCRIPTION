@@ -19,7 +19,6 @@ RoxygenNote: 7.2.0
 Imports:
     bslib,
     data.table,
-    disgenet2r,
     DT,
     geposan,
     glue,
