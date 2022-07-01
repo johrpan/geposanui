@@ -214,10 +214,13 @@ server <- function(options) {
         value = 0.0,
         { # nolint
           setProgress(0.2)
-          gprofiler2::gost(results_filtered()[, gene])
+          gprofiler2::gost(
+            results_filtered()[, gene],
+            custom_bg = preset()$gene_ids
+          )
         }
       )
-    })
+    }) |> bindCache(results_filtered(), preset())
 
     output$gost_plot <- plotly::renderPlotly({
       gprofiler2::gostplot(
@@ -272,11 +275,14 @@ server <- function(options) {
         { # nolint
           setProgress(0.2)
 
-          gene_names <- results_filtered()[, name]
-          gene_names <- unique(gene_names[gene_names != ""])
+          all_gene_names <- unique(results()[name != "", name])
+          filtered_gene_names <- unique(results_filtered()[name != "", name])
 
           diseases <- suppressMessages(
-            disgenet2r::disease_enrichment(gene_names)
+            disgenet2r::disease_enrichment(
+              all_gene_names,
+              custom_universe = list(filtered_gene_names)
+            )
           )
 
           data <- data.table(diseases@qresult)
