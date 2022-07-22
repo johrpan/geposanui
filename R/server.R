@@ -212,7 +212,8 @@ server <- function(options) {
           setProgress(0.2)
           gprofiler2::gost(
             results_filtered()[, gene],
-            custom_bg = preset()$gene_ids
+            custom_bg = preset()$gene_ids,
+            domain_scope = "custom_annotated"
           )
         }
       )
@@ -232,12 +233,14 @@ server <- function(options) {
 
       data[, total_ratio := term_size / effective_domain_size]
       data[, query_ratio := intersection_size / query_size]
+      data[, increase := (query_ratio - total_ratio) / total_ratio]
 
       data <- data[, .(
         source,
         term_name,
         total_ratio,
         query_ratio,
+        increase,
         p_value
       )]
 
@@ -249,19 +252,18 @@ server <- function(options) {
           "Term",
           "Total ratio",
           "Query ratio",
+          "Increase",
           "p-value"
         ),
         options = list(
           pageLength = 25
         )
-      )
-
-      dt <- DT::formatRound(dt, "p_value", digits = 4)
-      dt <- DT::formatPercentage(
-        dt,
-        c("total_ratio", "query_ratio"),
-        digits = 1
-      )
+      ) |>
+        DT::formatRound("p_value", digits = 4) |>
+        DT::formatPercentage(
+          c("total_ratio", "query_ratio", "increase"),
+          digits = 2
+        )
     })
   }
 }
