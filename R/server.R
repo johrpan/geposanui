@@ -85,11 +85,7 @@ server <- function(options) {
         )
       }
 
-      geposan::plot_scores(
-        ranking(),
-        gene_sets = gene_sets,
-        max_rank = results_filtered()[, max(rank)]
-      )
+      geposan::plot_scores(ranking(), gene_sets = gene_sets)
     })
 
     output$rankings_plot <- plotly::renderPlotly({
