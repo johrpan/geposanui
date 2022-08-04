@@ -69,6 +69,17 @@ ui <- function(options) {
                 )
               ),
               tabPanel(
+                title = "Ortholog locations",
+                div(
+                  style = "margin-top: 16px",
+                  plotly::plotlyOutput(
+                    "gene_locations_plot",
+                    width = "100%",
+                    height = "1200px"
+                  )
+                )
+              ),
+              tabPanel(
                 title = "Scores by position",
                 div(
                   style = "margin-top: 16px",

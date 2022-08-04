@@ -179,6 +179,25 @@ server <- function(options) {
       geposan::plot_boxplot(ranking(), gene_sets)
     })
 
+    output$gene_locations_plot <- plotly::renderPlotly({
+      preset <- preset()
+      gene_sets <- list("Reference genes" = preset$reference_gene_ids)
+      comparison_gene_ids <- comparison_gene_ids()
+
+      if (length(comparison_gene_ids) >= 1) {
+        gene_sets <- c(
+          gene_sets,
+          list("Comparison genes" = comparison_gene_ids)
+        )
+      }
+
+      geposan::plot_positions(
+        preset$species_ids,
+        gene_sets,
+        reference_gene_ids = preset$reference_gene_ids
+      )
+    })
+
     output$positions_plot <- plotly::renderPlotly({
       preset <- preset()
       gene_sets <- list("Reference genes" = preset$reference_gene_ids)
