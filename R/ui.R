@@ -4,6 +4,14 @@
 #'
 #' @noRd
 ui <- function(options) {
+  ranking_choices <- purrr::lmap(geposan::all_methods(), function(method) {
+    l <- list()
+    l[[method[[1]]$name]] <- method[[1]]$id
+    l
+  })
+
+  ranking_choices <- c(ranking_choices, "Combined" = "combined")
+
   div(
     custom_css(),
     shinyjs::useShinyjs(),
@@ -46,11 +54,55 @@ ui <- function(options) {
                 )
               ),
               tabPanel(
-                title = "Methods & Distribution",
+                title = "Method comparison",
                 div(
                   style = "margin-top: 16px",
                   plotly::plotlyOutput(
                     "rankings_plot",
+                    width = "100%",
+                    height = "600px"
+                  )
+                )
+              ),
+              tabPanel(
+                title = "Method correlation",
+                div(
+                  style = "margin-top: 16px",
+                  div(
+                    class = "flow-layout",
+                    selectInput(
+                      "ranking_y",
+                      label = NULL,
+                      choices = ranking_choices
+                    ),
+                    span(
+                      style = paste0(
+                        "display: inline-block;",
+                        "margin-right: 12px;",
+                        "padding: 0.375rem 0.75rem;"
+                      ),
+                      "~"
+                    ),
+                    selectInput(
+                      "ranking_x",
+                      label = NULL,
+                      choices = ranking_choices,
+                      selected = "combined"
+                    ),
+                    div(
+                      style = paste0(
+                        "display: inline-block;",
+                        "padding: 0.375rem 0.75rem;"
+                      ),
+                      checkboxInput(
+                        "use_ranks",
+                        "Use ranks instead of scores",
+                        value = TRUE
+                      )
+                    )
+                  ),
+                  plotly::plotlyOutput(
+                    "ranking_correlation_plot",
                     width = "100%",
                     height = "600px"
                   )

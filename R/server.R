@@ -116,6 +116,54 @@ server <- function(options) {
       geposan::plot_rankings(rankings, gene_sets)
     })
 
+    output$ranking_correlation_plot <- plotly::renderPlotly({
+      preset <- preset()
+      ranking <- ranking()
+
+      ranking_x <- if (input$ranking_x == "combined") {
+        ranking
+      } else {
+        weights <- list()
+        weights[[input$ranking_x]] <- 1.0
+        geposan::ranking(ranking, weights)
+      }
+
+      ranking_y <- if (input$ranking_y == "combined") {
+        ranking
+      } else {
+        weights <- list()
+        weights[[input$ranking_y]] <- 1.0
+        geposan::ranking(ranking, weights)
+      }
+
+      gene_sets <- list("Reference genes" = preset$reference_gene_ids)
+      comparison_gene_ids <- comparison_gene_ids()
+
+      if (length(comparison_gene_ids) >= 1) {
+        gene_sets <- c(
+          gene_sets,
+          list("Comparison genes" = comparison_gene_ids)
+        )
+      }
+
+      method_names <- geposan::all_methods() |> purrr::lmap(function(method) {
+        l <- list()
+        l[[method[[1]]$id]] <- method[[1]]$name
+        l
+      })
+
+      method_names[["combined"]] <- "Combined"
+
+      geposan::plot_rankings_correlation(
+        ranking_x,
+        ranking_y,
+        method_names[[input$ranking_x]],
+        method_names[[input$ranking_y]],
+        gene_sets = gene_sets,
+        use_ranks = input$use_ranks
+      )
+    })
+
     output$comparison_text <- renderUI({
       reference <- geposan::compare(
         ranking(),
