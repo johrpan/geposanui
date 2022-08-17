@@ -7,14 +7,6 @@
 #'
 #' @noRd
 results_ui <- function(id, options) {
-  ranking_choices <- purrr::lmap(geposan::all_methods(), function(method) {
-    l <- list()
-    l[[method[[1]]$name]] <- method[[1]]$id
-    l
-  })
-
-  ranking_choices <- c(ranking_choices, "Combined" = "combined")
-
   sidebarLayout(
     sidebarPanel(
       width = 3,
@@ -56,7 +48,9 @@ results_ui <- function(id, options) {
             selectInput(
               NS(id, "ranking_y"),
               label = NULL,
-              choices = ranking_choices
+              choices = list(
+                "Combined" = "combined"
+              )
             ),
             span(
               style = paste0(
@@ -69,8 +63,9 @@ results_ui <- function(id, options) {
             selectInput(
               NS(id, "ranking_x"),
               label = NULL,
-              choices = ranking_choices,
-              selected = "combined"
+              choices = list(
+                "Combined" = "combined"
+              )
             ),
             div(
               style = paste0(
@@ -251,6 +246,30 @@ results_server <- function(id, options, analysis) {
       geposan::plot_rankings(rankings, gene_sets)
     })
 
+    observe({
+      ranking_choices <- c(
+        purrr::lmap(preset()$methods, function(method) {
+          l <- list()
+          l[[method[[1]]$name]] <- method[[1]]$id
+          l
+        }),
+        "Combined" = "combined"
+      )
+
+      updateSelectInput(
+        session,
+        "ranking_y",
+         choices = ranking_choices
+      )
+
+      updateSelectInput(
+        session,
+        "ranking_x",
+        choices = ranking_choices,
+        selected = "combined"
+      )
+    }) |> bindEvent(preset())
+
     output$ranking_correlation_plot <- plotly::renderPlotly({
       preset <- preset()
       ranking <- ranking()
@@ -281,7 +300,7 @@ results_server <- function(id, options, analysis) {
         )
       }
 
-      method_names <- geposan::all_methods() |> purrr::lmap(function(method) {
+      method_names <- preset$methods |> purrr::lmap(function(method) {
         l <- list()
         l[[method[[1]]$id]] <- method[[1]]$name
         l
