@@ -14,11 +14,11 @@ methods_ui <- function(id) {
       NS(id, "optimization_target"),
       "Optimization target",
       choices = list(
-        "Number of included genes" = "combined",
-        "Mean rank" = "mean",
-        "Median rank" = "median",
-        "First rank" = "min",
-        "Last rank" = "max",
+        "Mean squared error" = "mse",
+        "Mean percentile" = "mean",
+        "Median percentile" = "median",
+        "Worst percentile" = "worst",
+        "Best percentile" = "best",
         "Customize weights" = "custom"
       )
     ),
