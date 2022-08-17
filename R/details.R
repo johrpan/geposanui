@@ -19,11 +19,12 @@ details_ui <- function(id) {
 
 #' Server for the detailed results panel.
 #'
+#' @param preset A reactive containing the preset that has been used.
 #' @param filtered_results A reactive containing the prefiltered results to be
 #'   displayed.
 #'
 #' @noRd
-details_server <- function(id, filtered_results) {
+details_server <- function(id, preset, filtered_results) {
   moduleServer(id, function(input, output, session) {
     output$copy <- renderUI({
       results <- filtered_results()
@@ -51,70 +52,72 @@ details_server <- function(id, filtered_results) {
       )
     })
 
-    methods <- geposan::all_methods()
-    method_ids <- sapply(methods, function(method) method$id)
-    method_names <- sapply(methods, function(method) method$name)
+    columns <- reactive({
+      methods <- preset()$methods
+      method_ids <- sapply(methods, function(method) method$id)
+      method_names <- sapply(methods, function(method) method$name)
 
-    columns <- c(
-      "rank",
-      "gene",
-      "name",
-      "chromosome",
-      "distance",
-      method_ids,
-      "score",
-      "percentile"
-    )
+      column_ids <- c(
+        "rank",
+        "gene",
+        "name",
+        "chromosome",
+        "distance",
+        method_ids,
+        "score",
+        "percentile"
+      )
 
-    column_names <- c(
-      "",
-      "Gene",
-      "",
-      "Chromosome",
-      "Distance",
-      method_names,
-      "Score",
-      "Percentile"
-    )
+      column_names <- c(
+        "",
+        "Gene",
+        "",
+        "Chromosome",
+        "Distance",
+        method_names,
+        "Score",
+        "Percentile"
+      )
+
+      list(
+        method_ids = method_ids,
+        column_ids = column_ids,
+        column_names = column_names
+      )
+    })
 
     output_data <- reactive({
-      filtered_results()[, ..columns][
-        ,
-        distance := paste0(
-          format(
-            round(distance / 1000000, digits = 2),
-            nsmall = 2,
-          ),
-          " Mbp"
-        )
-      ]
+      column_ids <- columns()$column_ids
+      filtered_results()[, ..column_ids]
     })
 
     output$download <- downloadHandler(
       filename = "geposan_filtered_results.csv",
-      content = function(file) {
-        fwrite(output_data(), file = file)
-      },
+      content = \(file) fwrite(output_data(), file = file),
       contentType = "text/csv"
     )
 
     output$genes <- DT::renderDT({
-      dt <- DT::datatable(
-        output_data(),
+      columns <- columns()
+
+      data <- copy(output_data())
+      data[, distance := glue::glue(
+        "{format(round(distance / 1000000, digits = 2), nsmall = 2)} Mbp"
+      )]
+
+      DT::datatable(
+        data,
         rownames = FALSE,
-        colnames = column_names,
+        colnames = columns$column_names,
+        selection = "none",
         options = list(
           rowCallback = js_link(),
           columnDefs = list(list(visible = FALSE, targets = 2)),
           pageLength = 25
         )
-      )
-
-      DT::formatPercentage(
-        dt,
-        c(method_ids, "score", "percentile"),
-        digits = 2
-      )
+      ) |>
+        DT::formatRound(c(columns$method_ids, "score"), digits = 4) |>
+        DT::formatPercentage("percentile", digits = 2)
     })
   })
 }
