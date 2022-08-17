@@ -104,7 +104,7 @@ details_server <- function(id, filtered_results) {
         rownames = FALSE,
         colnames = column_names,
         options = list(
-          rowCallback = js_link,
+          rowCallback = js_link(),
           columnDefs = list(list(visible = FALSE, targets = 2)),
           pageLength = 25
         )
@@ -117,4 +117,16 @@ details_server <- function(id, filtered_results) {
       )
     })
   })
+}
+
+#' Generate a JavaScript function to replace gene IDs with Ensembl gene links.
+#' @noRd
+js_link <- function() {
+  DT::JS("function(row, data) {
+    let id = data[1];
+    var name = data[2];
+    if (!name) name = 'Unknown';
+    let url = `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${id}`;
+    $('td:eq(1)', row).html(`<a href=\"${url}\" target=\"_blank\">${name}</a>`);
+  }")
 }

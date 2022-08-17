@@ -1,50 +1,185 @@
-# Java script function to replace gene IDs with Ensembl gene links.
-js_link <- DT::JS("function(row, data) {
-    let id = data[1];
-    var name = data[2];
-    if (!name) name = 'Unknown';
-    let url = `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${id}`;
-    $('td:eq(1)', row).html(`<a href=\"${url}\" target=\"_blank\">${name}</a>`);
-}")
-
-#' Create a server function for the application.
+#' Create the UI for the results page.
 #'
-#' @param options Global application options.
+#' @param id ID for namespacing.
+#' @param options Global options for the application.
+#'
+#' @return The UI elements.
+#'
 #' @noRd
-server <- function(options) {
-  function(input, output, session) {
-    preset <- input_page_server("input_page", options)
+results_ui <- function(id, options) {
+  ranking_choices <- purrr::lmap(geposan::all_methods(), function(method) {
+    l <- list()
+    l[[method[[1]]$name]] <- method[[1]]$id
+    l
+  })
 
+  ranking_choices <- c(ranking_choices, "Combined" = "combined")
+
+  sidebarLayout(
+    sidebarPanel(
+      width = 3,
+      comparison_editor_ui(NS(id, "comparison_editor"), options),
+      methods_ui(NS(id, "methods")),
+      filters_ui(NS(id, "filters"))
+    ),
+    mainPanel(
+      width = 9,
+      tabsetPanel(
+        type = "pills",
+        tabPanel(
+          title = "Overview",
+          div(
+            style = "margin-top: 16px",
+            plotly::plotlyOutput(
+              NS(id, "rank_plot"),
+              width = "100%",
+              height = "600px"
+            )
+          )
+        ),
+        tabPanel(
+          title = "Method comparison",
+          div(
+            style = "margin-top: 16px",
+            plotly::plotlyOutput(
+              NS(id, "rankings_plot"),
+              width = "100%",
+              height = "600px"
+            )
+          )
+        ),
+        tabPanel(
+          title = "Method correlation",
+          div(
+            class = "flow-layout",
+            style = "margin-top: 16px",
+            selectInput(
+              NS(id, "ranking_y"),
+              label = NULL,
+              choices = ranking_choices
+            ),
+            span(
+              style = paste0(
+                "display: inline-block;",
+                "margin-right: 12px;",
+                "padding: 0.375rem 0.75rem;"
+              ),
+              "~"
+            ),
+            selectInput(
+              NS(id, "ranking_x"),
+              label = NULL,
+              choices = ranking_choices,
+              selected = "combined"
+            ),
+            div(
+              style = paste0(
+                "display: inline-block;",
+                "padding: 0.375rem 0.75rem;"
+              ),
+              checkboxInput(
+                NS(id, "use_ranks"),
+                "Use ranks instead of scores",
+                value = TRUE
+              )
+            ),
+            div(
+              style = paste0(
+                "display: inline-block;",
+                "padding: 0.375rem 0.75rem;"
+              ),
+              checkboxInput(
+                NS(id, "use_sample"),
+                "Take random sample of genes",
+                value = TRUE
+              )
+            )
+          ),
+          plotly::plotlyOutput(
+            NS(id, "ranking_correlation_plot"),
+            width = "100%",
+            height = "600px"
+          )
+        ),
+        tabPanel(
+          title = "Comparison",
+          div(
+            style = "margin-top: 16px",
+            htmlOutput(NS(id, "comparison_text")),
+            plotly::plotlyOutput(
+              NS(id, "boxplot"),
+              width = "100%",
+              height = "600px"
+            )
+          )
+        ),
+        tabPanel(
+          title = "Ortholog locations",
+          div(
+            style = "margin-top: 16px",
+            plotly::plotlyOutput(
+              NS(id, "gene_locations_plot"),
+              width = "100%",
+              height = "1200px"
+            )
+          )
+        ),
+        tabPanel(
+          title = "Scores by position",
+          div(
+            class = "flow-layout",
+            style = "margin-top: 16px",
+            selectInput(
+              NS(id, "positions_plot_chromosome_name"),
+              label = NULL,
+              choices = c(
+                list("All chromosomes" = "all"),
+                chromosome_choices()
+              )
+            ),
+            plotly::plotlyOutput(
+              NS(id, "positions_plot"),
+              width = "100%",
+              height = "600px"
+            )
+          )
+        ),
+        tabPanel(
+          title = "Detailed results",
+          details_ui(NS(id, "results"))
+        ),
+        tabPanel(
+          title = "g:Profiler",
+          div(
+            style = "margin-top: 16px",
+            plotly::plotlyOutput("gost_plot"),
+          ),
+          div(
+            style = "margin-top: 16px",
+            DT::DTOutput(NS(id, "gost_details"))
+          )
+        )
+      )
+    )
+  )
+}
+
+#' Application logic for the results page.
+#'
+#' @param id ID for namespacing.
+#' @param options Global application options.
+#' @param analysis A reactive containing the analysis that gets visualized.
+#'
+#' @noRd
+results_server <- function(id, options, analysis) {
+  preset <- reactive(analysis()$preset)
+
+  moduleServer(id, function(input, output, session) {
     comparison_gene_ids <- comparison_editor_server(
       "comparison_editor",
       preset,
       options
     )
-
-    observe({
-      updateNavbarPage(
-        session,
-        "main_page",
-        selected = "Results"
-      )
-    }) |> bindEvent(preset(), ignoreInit = TRUE)
-
-    # Compute the results according to the preset.
-    analysis <- reactive({
-      withProgress(
-        message = "Analyzing genes",
-        value = 0.0,
-        { # nolint
-          geposan::analyze(
-            preset(),
-            progress = function(progress) {
-              setProgress(progress)
-            },
-            include_results = FALSE
-          )
-        }
-      )
-    }) |> bindCache(preset())
 
     # Rank the results.
     ranking <- methods_server("methods", analysis, comparison_gene_ids)
@@ -333,5 +468,25 @@ server <- function(options) {
           digits = 2
         )
     })
-  }
+  })
+}
+
+#' Generate a named list for choosing chromosomes.
+#' @noRd
+chromosome_choices <- function() {
+  choices <- purrr::lmap(
+    unique(geposan::genes$chromosome),
+    function(name) {
+      choice <- list(name)
+
+      names(choice) <- paste0(
+        "Chromosome ",
+        name
+      )
+
+      choice
+    }
+  )
+
+  choices[order(suppressWarnings(sapply(choices, as.integer)))]
 }

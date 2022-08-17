@@ -41,3 +41,71 @@ run_app <- function(gene_sets,
     port = port
   )
 }
+
+#' Generate the main UI for the application.
+#'
+#' @param options Global options for the application.
+#'
+#' @noRd
+ui <- function(options) {
+  div(
+    custom_css(),
+    shinyjs::useShinyjs(),
+    rclipboard::rclipboardSetup(),
+    navbarPage(
+      id = "main_page",
+      theme = bslib::bs_theme(
+        version = 5,
+        bootswatch = "united",
+        primary = "#1964bf"
+      ),
+      title = options$title,
+      selected = "Results",
+      tabPanel(
+        "Input data",
+        input_page_ui("input_page", options)
+      ),
+      tabPanel(
+        "Results",
+        results_ui("results", options)
+      )
+    )
+  )
+}
+
+#' Create a server function for the application.
+#'
+#' @param options Global application options.
+#' @noRd
+server <- function(options) {
+  function(input, output, session) {
+    preset <- input_page_server("input_page", options)
+
+    observe({
+      updateNavbarPage(
+        session,
+        "main_page",
+        selected = "Results"
+      )
+    }) |> bindEvent(preset(), ignoreInit = TRUE)
+
+    # Compute the results according to the preset.
+    analysis <- reactive({
+      withProgress(
+        message = "Analyzing genes",
+        value = 0.0,
+        { # nolint
+          geposan::analyze(
+            preset(),
+            progress = function(progress) {
+              setProgress(progress)
+            },
+            include_results = FALSE
+          )
+        }
+      )
+    }) |> bindCache(preset())
+
+    results_server("results", options, analysis)
+  }
+}
