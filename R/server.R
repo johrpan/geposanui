@@ -160,7 +160,8 @@ server <- function(options) {
         method_names[[input$ranking_x]],
         method_names[[input$ranking_y]],
         gene_sets = gene_sets,
-        use_ranks = input$use_ranks
+        use_ranks = input$use_ranks,
+        use_sample = input$use_sample
       )
     })
 

@@ -8,7 +8,8 @@ custom_css <- function() {
       "display: inline-block;",
       "vertical-align: top;",
       "margin-right: 12px;",
-      "}"
+      "}",
+      ".shiny-input-container { width: auto !important; min-width: 200px; }"
     ))
   )
 }

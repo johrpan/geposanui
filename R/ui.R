@@ -67,45 +67,54 @@ ui <- function(options) {
               tabPanel(
                 title = "Method correlation",
                 div(
+                  class = "flow-layout",
                   style = "margin-top: 16px",
+                  selectInput(
+                    "ranking_y",
+                    label = NULL,
+                    choices = ranking_choices
+                  ),
+                  span(
+                    style = paste0(
+                      "display: inline-block;",
+                      "margin-right: 12px;",
+                      "padding: 0.375rem 0.75rem;"
+                    ),
+                    "~"
+                  ),
+                  selectInput(
+                    "ranking_x",
+                    label = NULL,
+                    choices = ranking_choices,
+                    selected = "combined"
+                  ),
                   div(
-                    class = "flow-layout",
-                    selectInput(
-                      "ranking_y",
-                      label = NULL,
-                      choices = ranking_choices
+                    style = paste0(
+                      "display: inline-block;",
+                      "padding: 0.375rem 0.75rem;"
                     ),
-                    span(
-                      style = paste0(
-                        "display: inline-block;",
-                        "margin-right: 12px;",
-                        "padding: 0.375rem 0.75rem;"
-                      ),
-                      "~"
-                    ),
-                    selectInput(
-                      "ranking_x",
-                      label = NULL,
-                      choices = ranking_choices,
-                      selected = "combined"
-                    ),
-                    div(
-                      style = paste0(
-                        "display: inline-block;",
-                        "padding: 0.375rem 0.75rem;"
-                      ),
-                      checkboxInput(
-                        "use_ranks",
-                        "Use ranks instead of scores",
-                        value = TRUE
-                      )
+                    checkboxInput(
+                      "use_ranks",
+                      "Use ranks instead of scores",
+                      value = TRUE
                     )
                   ),
-                  plotly::plotlyOutput(
-                    "ranking_correlation_plot",
-                    width = "100%",
-                    height = "600px"
+                  div(
+                    style = paste0(
+                      "display: inline-block;",
+                      "padding: 0.375rem 0.75rem;"
+                    ),
+                    checkboxInput(
+                      "use_sample",
+                      "Take random sample of genes",
+                      value = TRUE
+                    )
                   )
+                ),
+                plotly::plotlyOutput(
+                  "ranking_correlation_plot",
+                  width = "100%",
+                  height = "600px"
                 )
               ),
               tabPanel(
@@ -134,6 +143,7 @@ ui <- function(options) {
               tabPanel(
                 title = "Scores by position",
                 div(
+                  class = "flow-layout",
                   style = "margin-top: 16px",
                   selectInput(
                     "positions_plot_chromosome_name",
