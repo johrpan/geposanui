@@ -162,7 +162,7 @@ ui <- function(options) {
               ),
               tabPanel(
                 title = "Detailed results",
-                results_ui("results")
+                details_ui("results")
               ),
               tabPanel(
                 title = "g:Profiler",

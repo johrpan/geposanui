@@ -71,7 +71,7 @@ server <- function(options) {
     results_filtered <- filters_server("filters", results)
 
     # Server for the detailed results panel.
-    results_server("results", results_filtered)
+    details_server("results", results_filtered)
 
     output$rank_plot <- plotly::renderPlotly({
       preset <- preset()

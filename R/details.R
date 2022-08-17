@@ -1,6 +1,6 @@
 #' Construct UI for the detailed results panel.
 #' @noRd
-results_ui <- function(id) {
+details_ui <- function(id) {
   verticalLayout(
     div(
       style = "margin-top: 16px",
@@ -23,7 +23,7 @@ results_ui <- function(id) {
 #'   displayed.
 #'
 #' @noRd
-results_server <- function(id, filtered_results) {
+details_server <- function(id, filtered_results) {
   moduleServer(id, function(input, output, session) {
     output$copy <- renderUI({
       results <- filtered_results()
