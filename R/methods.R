@@ -22,26 +22,7 @@ methods_ui <- function(id) {
         "Customize weights" = "custom"
       )
     ),
-    lapply(geposan::all_methods(), function(method) {
-      verticalLayout(
-        checkboxInput(
-          NS(id, method$id),
-          span(
-            method$description,
-            class = "control-label"
-          ),
-          value = TRUE
-        ),
-        sliderInput(
-          NS(id, sprintf("%s_weight", method$id)),
-          NULL,
-          min = -1.0,
-          max = 1.0,
-          step = 0.01,
-          value = 1.0
-        )
-      )
-    })
+    uiOutput(NS(id, "method_sliders"))
   )
 }
 
@@ -52,23 +33,75 @@ methods_ui <- function(id) {
 # @return A reactive containing the weighted results.
 methods_server <- function(id, analysis, comparison_gene_ids) {
   moduleServer(id, function(input, output, session) {
-    # Observe each method's enable button and synchronise the slider state.
-    lapply(geposan::all_methods(), function(method) {
-      observeEvent(input[[method$id]], {
-        shinyjs::toggleState(
-          sprintf("%s_weight", method$id),
-          condition = input[[method$id]]
-        )
-      })
-
-      shinyjs::onclick(sprintf("%s_weight", method$id), {
-        updateSelectInput(
-          session,
-          "optimization_target",
-          selected = "custom"
+    output$method_sliders <- renderUI({
+      lapply(analysis()$preset$methods, function(method) {
+        verticalLayout(
+          checkboxInput(
+            session$ns(method$id),
+            span(
+              method$description,
+              class = "control-label"
+            ),
+            value = TRUE
+          ),
+          sliderInput(
+            session$ns(sprintf("%s_weight", method$id)),
+            NULL,
+            min = -1.0,
+            max = 1.0,
+            step = 0.01,
+            value = 1.0
+          )
         )
       })
     })
+
+    method_observers <- list()
+    method_listeners <- list()
+
+    observe({
+      for (method_observer in method_observers) {
+        destroy(method_observer)
+      }
+
+      for (method_listener in method_listeners) {
+        shinyjs::removeEvent(method_listener)
+      }
+
+      method_observers <- lapply(analysis()$preset$methods, function(method) {
+        observeEvent(input[[method$id]], {
+          shinyjs::toggleState(
+            sprintf("%s_weight", method$id),
+            condition = input[[method$id]]
+          )
+        })
+      })
+
+      method_listeners <- lapply(analysis()$preset$methods, function(method) {
+        shinyjs::onclick(sprintf("%s_weight", method$id), {
+          updateSelectInput(
+            session,
+            "optimization_target",
+            selected = "custom"
+          )
+        })
+      })
+
+      for (method in analysis()$preset$methods) {
+        method_observer <-
+          method_observers <- c(method_observers, method_observer)
+
+        method_listener <- shinyjs::onclick(sprintf("%s_weight", method$id), {
+          updateSelectInput(
+            session,
+            "optimization_target",
+            selected = "custom"
+          )
+        })
+
+        method_listeners <- c(method_listeners, method_listener)
+      }
+    }) |> bindEvent(analysis())
 
     # This reactive will always contain the currently selected optimization
     # gene IDs in a normalized form.
@@ -90,9 +123,11 @@ methods_server <- function(id, analysis, comparison_gene_ids) {
 
         included_methods <- NULL
 
-        for (method in geposan::all_methods()) {
-          if (input[[method$id]]) {
-            included_methods <- c(included_methods, method$id)
+        for (method in analysis()$preset$methods) {
+          if (!is.null(input[[method$id]])) {
+            if (input[[method$id]]) {
+              included_methods <- c(included_methods, method$id)
+            }
           }
         }
 
@@ -106,7 +141,7 @@ methods_server <- function(id, analysis, comparison_gene_ids) {
     }) |> bindCache(
       analysis(),
       optimization_gene_ids(),
-      sapply(geposan::all_methods(), function(method) input[[method$id]]),
+      sapply(analysis()$preset$methods, function(method) input[[method$id]]),
       input$optimization_target
     )
 
@@ -115,10 +150,12 @@ methods_server <- function(id, analysis, comparison_gene_ids) {
 
       if (length(optimization_gene_ids()) < 1 |
         input$optimization_target == "custom") {
-        for (method in geposan::all_methods()) {
-          if (input[[method$id]]) {
-            weight <- input[[sprintf("%s_weight", method$id)]]
-            weights[[method$id]] <- weight
+        for (method in analysis()$preset$methods) {
+          if (!is.null(input[[method$id]])) {
+            if (input[[method$id]]) {
+              weight <- input[[sprintf("%s_weight", method$id)]]
+              weights[[method$id]] <- weight
+            }
           }
         }
       } else {
