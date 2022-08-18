@@ -1,13 +1,14 @@
 #' Run the application server.
 #'
-#' @param gene_sets A list of predefined gene sets. This should be a named list
-#'   containing vectors of gene IDs for each set. The names will be used to
-#'   present the gene set throughout the user interface. You have to provide *at
-#'   least one gene set* which will be selected as the initial reference gene
-#'   set.
+#' @param reference_gene_sets A list of predefined gene sets to be used as
+#'   reference genes. This should be a named list containing vectors of gene IDs
+#'   for each set. You have to provide *at least one gene set* which will be
+#'   selected as the initial reference gene set.
 #' @param species_sets A list of predefined species sets. This should be a named
 #'   list containing vectors of species IDs for each set. The names will be used
 #'   to present the species set throughout the user interface.
+#' @param comparison_gene_sets A named list of predefined gene sets to be used
+#'   as comparison genes.
 #' @param locked Whether the application should be locked and prohibit
 #'   performing custom analyses. If this is set to `TRUE`, only the predefined
 #'   gene and species sets are available for customizing the analysis. This may
@@ -16,12 +17,13 @@
 #' @param port The port to serve the application on.
 #'
 #' @export
-run_app <- function(gene_sets,
+run_app <- function(reference_gene_sets,
                     species_sets = NULL,
+                    comparison_gene_sets = NULL,
                     locked = FALSE,
                     title = "Gene Position Analysis",
                     port = 3464) {
-  stopifnot(!is.null(gene_sets) & !is.null(gene_sets[[1]]))
+  stopifnot(!is.null(reference_gene_sets) & !is.null(reference_gene_sets[[1]]))
 
   # These function calls make the required java scripts available.
   shinyjs::useShinyjs()
@@ -29,8 +31,9 @@ run_app <- function(gene_sets,
 
   # Bundle of global options to redue broilerplate.
   options <- list(
-    gene_sets = gene_sets,
+    reference_gene_sets = reference_gene_sets,
     species_sets = species_sets,
+    comparison_gene_sets = comparison_gene_sets,
     locked = locked,
     title = title
   )

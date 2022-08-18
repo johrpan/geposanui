@@ -8,7 +8,7 @@
 #' @noRd
 preset_editor_ui <- function(id, options) {
   species_choices <- c("All species", names(options$species_sets))
-  gene_choices <- names(options$gene_sets)
+  gene_choices <- names(options$reference_gene_sets)
 
   if (!options$locked) {
     species_choices <- c(species_choices, "Customize")
@@ -97,7 +97,7 @@ preset_editor_server <- function(id, options) {
       reference_gene_ids <- if (input$reference_genes == "Customize") {
         custom_gene_ids()
       } else {
-        options$gene_sets[[input$reference_genes]]
+        options$reference_gene_sets[[input$reference_genes]]
       }
 
       species_ids <- if (input$species == "All species") {

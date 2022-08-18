@@ -11,7 +11,7 @@ comparison_editor_ui <- function(id, options) {
       choices = c(
         "Your genes",
         "Random genes",
-        names(options$gene_sets)
+        names(options$comparison_gene_sets)
       )
     ),
     conditionalPanel(
@@ -47,7 +47,7 @@ comparison_editor_server <- function(id, preset, options) {
       } else if (input$comparison_genes == "Your genes") {
         custom_gene_ids()
       } else {
-        options$gene_sets[[input$comparison_genes]]
+        options$comparison_gene_sets[[input$comparison_genes]]
       }
     })
   })
