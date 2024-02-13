@@ -94,7 +94,7 @@ gene_selector_server <- function(id) {
         geposan::genes[id %chin% inputs, id]
       }
 
-      if (length(gene_ids > 100)) {
+      if (length(gene_ids) > 100) {
         gene_ids[seq_len(100)]
       } else {
         gene_ids
