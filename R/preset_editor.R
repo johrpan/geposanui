@@ -50,6 +50,30 @@ preset_editor_ui <- function(id, options) {
         gene_selector_ui(NS(id, "custom_genes"))
       )
     },
+    tabsetPanel(
+      id = NS(id, "error_panel"),
+      type = "hidden",
+      tabPanelBody(value = "hide"),
+      tabPanelBody(
+        value = "show",
+        div(
+          style = "color: red;",
+          htmlOutput(NS(id, "errors"))
+        )
+      )
+    ),
+    tabsetPanel(
+      id = NS(id, "warning_panel"),
+      type = "hidden",
+      tabPanelBody(value = "hide"),
+      tabPanelBody(
+        value = "show",
+        div(
+          style = "color: orange;",
+          htmlOutput(NS(id, "warnings"))
+        )
+      )
+    ),
     if (options$locked) {
       HTML(paste0(
         "This instance prohibits performing custom analyses ",
@@ -77,6 +101,33 @@ preset_editor_ui <- function(id, options) {
 #' @noRd
 preset_editor_server <- function(id, options) {
   moduleServer(id, function(input, output, session) {
+    preset_errors <- reactiveVal(character())
+    preset_warnings <- reactiveVal(character())
+
+    output$errors <- renderUI({
+      HTML(paste(preset_errors(), collapse = "<br>"))
+    })
+
+    output$warnings <- renderUI({
+      HTML(paste(preset_warnings(), collapse = "<br>"))
+    })
+
+    observe({
+      updateTabsetPanel(
+        session,
+        "error_panel",
+        selected = if (is.null(preset_errors())) "hide" else "show"
+      )
+    })
+
+    observe({
+      updateTabsetPanel(
+        session,
+        "warning_panel",
+        selected = if (is.null(preset_warnings())) "hide" else "show"
+      )
+    })
+
     custom_gene_ids <- if (!options$locked) {
       species_choices <- geposan::species$id
       names(species_choices) <- geposan::species$name
@@ -108,14 +159,35 @@ preset_editor_server <- function(id, options) {
         options$species_sets[[input$species]]
       }
 
-      tryCatch(
-        geposan::preset(
-          reference_gene_ids,
-          species_ids = species_ids,
-          methods = options$methods
+      new_errors <- character()
+      new_warnings <- character()
+
+      preset <- withCallingHandlers(
+        tryCatch(
+          geposan::preset(
+            reference_gene_ids,
+            species_ids = species_ids,
+            methods = options$methods
+          ),
+          error = function(e) {
+            new_errors <<- c(new_errors, e$message)
+            NULL
+          }
         ),
-        error = function(err) NULL
+        warning = function(w) {
+          new_warnings <<- c(new_warnings, w$message)
+
+        }
       )
+
+      preset_errors(new_errors)
+      preset_warnings(new_warnings)
+
+      if (length(new_errors) >= 1) {
+        NULL
+      } else {
+        preset
+      }
     })
   })
 }
