@@ -75,6 +75,15 @@ ui <- function(options) {
       tabPanel(
         "Results",
         results_ui("results", options)
+      ),
+      tabPanel(
+        "Help",
+        div(
+          class = "container",
+          htmltools::includeMarkdown(
+            system.file("content", "manual.md", package = "geposanui")
+          )
+        )
       )
     )
   )
