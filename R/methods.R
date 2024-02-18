@@ -2,17 +2,38 @@
 methods_ui <- function(id, options) {
   verticalLayout(
     h5("Methods"),
+    popover(
+      title = "Optimization target",
+      help = paste0(
+        "These genes will be used as the target for optimization. This means ",
+        "that the method weights will be automatically adjusted to maximize ",
+        "the scores of this gene set. Select \"Reference genes\", if you want ",
+        "to compare your genes of interest with the reference gene set."
+      ),
+      div(class = "label", "Genes to optimize for")
+    ),
     selectInput(
       NS(id, "optimization_genes"),
-      "Genes to optimize for",
+      label = NULL,
       choices = list(
         "Reference genes" = "reference",
         "Comparison genes" = "comparison"
       )
     ),
+    popover(
+      title = "Optimization target",
+      help = paste0(
+        "This determines how the genes, that were selected for optimization, ",
+        "are combined. For example, \"Mean rank\" optimizes the method ",
+        "weights based on the highest possible mean score across all selected ",
+        "genes and \"First rank\" would always focus on the best performing ",
+        "gene."
+      ),
+      div(class = "label", "Optimization target")
+    ),
     selectInput(
       NS(id, "optimization_target"),
-      "Optimization target",
+      label = NULL,
       choices = list(
         "Mean rank" = "mean",
         "Median rank" = "median",
@@ -23,8 +44,9 @@ methods_ui <- function(id, options) {
     ),
     lapply(options$methods, function(method) {
       verticalLayout(
-        div(
-          style = "display: flex;",
+        popover(
+          title = method$name,
+          help = method$help,
           checkboxInput(
             NS(id, method$id),
             span(
@@ -32,14 +54,6 @@ methods_ui <- function(id, options) {
               class = "control-label"
             ),
             value = TRUE
-          ),
-          div(
-            style = "margin-left: 5px;",
-            bslib::popover(
-              bsicons::bs_icon("question-circle"),
-              title = method$name,
-              method$help
-            )
           )
         ),
         sliderInput(

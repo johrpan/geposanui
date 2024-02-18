@@ -5,9 +5,21 @@
 comparison_editor_ui <- function(id, options) {
   verticalLayout(
     h5("Comparison"),
+    popover(
+      title = "Comparison genes",
+      help = paste0(
+        "Select your genes of interest to compare their scores with the ",
+        "reference genes. This will not influence the computation of scores, ",
+        "but it will update the visualizations and summary statistics. Select ",
+        "\"Your genes\" and use the other controls below for selecting or ",
+        "pasting the genes. You can also use predefined gene sets for ",
+        "comparison."
+      ),
+      div(class = "label", "Comparison genes")
+    ),
     selectInput(
       NS(id, "comparison_genes"),
-      "Comparison genes",
+      label = NULL,
       choices = c(
         "Your genes",
         "Random genes",

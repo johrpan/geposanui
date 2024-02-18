@@ -17,9 +17,20 @@ preset_editor_ui <- function(id, options) {
 
   verticalLayout(
     h5("Inputs"),
+    popover(
+      title = "Species to include",
+      help = paste0(
+        "This can be used to limit the input dataset to a predefined set of ",
+        "species. Normally, it is reasonable to use all species. So, do not ",
+        "change this unless you have specific reasons to do so. The ",
+        "algorithms will automatically optimize the input dataset by ",
+        "excluding species that do not share enough genes."
+      ),
+      div(class = "label", "Species to include")
+    ),
     selectInput(
       NS(id, "species"),
-      "Species to include",
+      label = NULL,
       choices = species_choices
     ),
     if (!options$locked) {
@@ -36,9 +47,18 @@ preset_editor_ui <- function(id, options) {
         ),
       )
     },
+    popover(
+      title = "Reference genes",
+      help = paste0(
+        "The reference genes are the main input to the computation. They are ",
+        "used for computing some of the scores and for optimizing the weights ",
+        "of the different methods."
+      ),
+      div(class = "label", "Reference genes")
+    ),
     selectInput(
       NS(id, "reference_genes"),
-      "Reference genes",
+      label = NULL,
       choices = gene_choices
     ),
     if (!options$locked) {
