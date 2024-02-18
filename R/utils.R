@@ -26,3 +26,19 @@ popover <- function(title, help, child) {
     )
   )
 }
+
+#' An information label.
+#'
+#' @param info Information text.
+#'
+#' @noRd
+info <- function(info) {
+  div(
+    style = "display: flex; margin: 1rem",
+    div(
+      style = "margin-right: 10px",
+      bsicons::bs_icon("info-circle")
+    ),
+    info
+  )
+}

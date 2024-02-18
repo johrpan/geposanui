@@ -39,20 +39,27 @@ results_ui <- function(id, options) {
         tabPanel(
           title = "Gene sets",
           div(
-            style = "margin-top: 16px",
-            htmlOutput(NS(id, "comparison_text")),
-            div(
-              style = "margin-top: 16px;",
-              plotly::plotlyOutput(
-                NS(id, "boxplot"),
-                width = "100%",
-                height = "600px"
-              )
+            style = "margin: 1rem",
+            htmlOutput(NS(id, "comparison_text"))
+          ),
+          div(
+            style = "margin-top: 16px;",
+            plotly::plotlyOutput(
+              NS(id, "boxplot"),
+              width = "100%",
+              height = "600px"
             )
           )
         ),
         tabPanel(
           title = "Methods",
+          info(paste0(
+            "This plot compares the results of the individual methods with ",
+            "the combined ranking. It shows a condensed version of the ",
+            "overview plot for each method. The thickness of each graph ",
+            "represents the distribution of scores for each ranking (violin ",
+            "plot)."
+          )),
           div(
             style = "margin-top: 16px",
             plotly::plotlyOutput(
@@ -64,9 +71,16 @@ results_ui <- function(id, options) {
         ),
         tabPanel(
           title = "Method correlation",
+          info(paste0(
+            "This plot visualizes the correlation between different methods. ",
+            "You can use the controls below to select two methods to ",
+            "compare. By default, a random sample of genes is used to make ",
+            "the visualization easier to interpret. This behavior can be ",
+            "disabled by clicking the checkbox."
+          )),
           div(
             class = "flow-layout",
-            style = "margin-top: 16px",
+            style = "margin: 1rem",
             selectInput(
               NS(id, "ranking_y"),
               label = NULL,
@@ -109,7 +123,10 @@ results_ui <- function(id, options) {
               )
             )
           ),
-          htmlOutput(NS(id, "method_correlation")),
+          div(
+            style = "margin: 1rem",
+            htmlOutput(NS(id, "method_correlation"))
+          ),
           plotly::plotlyOutput(
             NS(id, "ranking_correlation_plot"),
             width = "100%",
@@ -118,9 +135,14 @@ results_ui <- function(id, options) {
         ),
         tabPanel(
           title = "Scores by position",
+          info(paste0(
+            "This page combines different visualizations of the distribution ",
+            "of scores by chromosomal position. Use the menu below to switch ",
+            "from the overview to plots for individual human chromosomes."
+          )),
           div(
             class = "flow-layout",
-            style = "margin-top: 16px",
+            style = "margin: 1rem",
             selectInput(
               NS(id, "positions_plot_chromosome_name"),
               label = NULL,
@@ -131,15 +153,20 @@ results_ui <- function(id, options) {
                 ),
                 chromosome_choices()
               )
-            ),
-            htmlOutput(
-              NS(id, "positions_plot"),
-              container = \(...) div(style = "width: 100%; height: 600px", ...)
             )
+          ),
+          htmlOutput(
+            NS(id, "positions_plot"),
+            container = \(...) div(style = "width: 100%; height: 600px", ...)
           )
         ),
         tabPanel(
           title = "Ortholog locations",
+          info(paste0(
+            "This plot shows the locations of the selected genes for each ",
+            "species. The blue line visualizes the largest possible ",
+            "distance in this species (across all chromosomes)."
+          )),
           div(
             style = "margin-top: 16px",
             plotly::plotlyOutput(
