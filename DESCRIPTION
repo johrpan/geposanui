@@ -1,6 +1,6 @@
 Package: geposanui
 Title: Graphical user interface for geposan
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R:
     person(
         "Elias",
@@ -15,7 +15,7 @@ Description: This package provides a graphical user interface for analyzing
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.1
 Depends:
     R (>= 4.1)
 Imports:
@@ -26,6 +26,8 @@ Imports:
     geposan,
     glue,
     gprofiler2,
+    htmltools,
+    markdown,
     plotly,
     purrr,
     rlang,

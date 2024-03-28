@@ -1,8 +1,8 @@
 # geposanui
 
-This package provides a graphical user interface for analyzing genes based on
-position data across species. It is a frontend for the R package
-[`geposan`](https://code.johrpan.de/johrpan/geposan). You can visit an example
+This R package provides a graphical user interface for analyzing genes based
+on position data across species. It is a frontend for the R package
+[`geposan`](https://github.com/johrpan/geposan). You can visit an example
 instance of the application [here](https://tpe-old.uni-rostock.de) where the
 method is used to find new
 [TPE-OLD](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4233240/) candidate
@@ -10,11 +10,15 @@ genes based on the currently known ones.
 
 ## Installation
 
+This package depends on [`geposan`](https://github.com/johrpan/geposan'),
+which should be installed first.
+
 You can install the development version of `geposanui` using:
 
 ```r
 # install.packages("remotes")
-remotes::install_git("https://code.johrpan.de/johrpan/geposanui.git")
+# remotes::install_github("johrpan/geposan")
+remotes::install_github("johrpan/geposanui")
 ```
 
 See [this page](https://remotes.r-lib.org/reference/install_git.html) for more
