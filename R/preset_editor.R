@@ -102,8 +102,8 @@ preset_editor_ui <- function(id, options) {
         "reference genes to find patterns in their ",
         "chromosomal positions. If you would like to apply ",
         "this method for your own research, see ",
-        "<a href=\"https://code.johrpan.de/johrpan/geposanui/src/",
-        "branch/main/README.md\" target=\"_blank\">this page</a> for ",
+        "<a href=\"https://github.com/johrpan/geposanui/blob/main/README.md\" ",
+        "target=\"_blank\">this page</a> for ",
         "more information."
       ))
     }
