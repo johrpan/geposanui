@@ -85,6 +85,16 @@ ui <- function(options) {
           )
         )
       )
+    ),
+    div(
+      class = "footer",
+      HTML(glue::glue(
+        "<code>geposanui</code> version {packageVersion(\"geposanui\")}<br>",
+        "GitHub: <a href=\"https://github.com/johrpan/geposanui/\" ",
+        "target=\"blank\">johrpan/geposan</a><br>",
+        "Citation: <a href=\"https://doi.org/10.1093/nargab/lqae037\" ",
+        "target=\"blank\">10.1093/nargab/lqae037</a>"
+      ))
     )
   )
 }

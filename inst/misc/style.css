@@ -71,3 +71,9 @@ h5 {
     border-radius: 0.5rem;
     filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
 }
+
+.footer {
+    margin: 32px 24px;
+    font-size: small;
+    color: grey;
+}

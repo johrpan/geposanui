@@ -54,6 +54,17 @@ This will run the application which you can reach using your favorite browser.
 For more information on the options provided by the function, take a look at the
 built-in documentation (`?geposanui::run_app`).
 
+## Publication
+
+This method and its implementation have been peer-reviewed and published in
+NAR Genomics and Bioinformatics. If you use the package in your research or
+would like to refer to our methodology, please cite the following paper:
+
+Elias F Projahn, Georg Fuellen, Michael Walter, Steffen Möller, Proposing
+candidate genes under telomeric control based on cross-species position data,
+NAR Genomics and Bioinformatics, Volume 6, Issue 2, June 2024, lqae037,
+https://doi.org/10.1093/nargab/lqae037
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it under

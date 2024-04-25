@@ -2,9 +2,11 @@
 
 This web interface provides an interactive tool to analyze genes based on their position across species. Specifically, it can be used to investigate the effect of telomere length on gene regulation. Telomeres are repetitive DNA sequences at the end of chromosomes that shorten with every cell division. The regulation of a number of genes has been reported to depend on the length of telomeres. Gene positions across species can be a valuable dataset for analyzing effects like this because genes that are regulated by position effects may exhibit patterns in the position of their orthologs.
 
-It is possible to use this tool to analyze any set of reference genes. Most likely, you are currently visiting [tpe-old.uni-rostock.de](https://tpe-old.uni-rostock.de/), which is preconfigured based on genes affected by TPE-OLD (telomere position effect over long distances). This is a specific way in which telomeres can influence gene expression by forming long-distance loops.
+It is possible to use this tool to analyze any set of reference genes. Most likely, you are currently visiting tpe-old.uni-rostock.de, which is preconfigured based on genes affected by TPE-OLD (telomere position effect over long distances). This is a specific way in which telomeres can influence gene expression by forming long-distance loops.
 
 Information on TPE-OLD is still limited. By providing this tool, we hope to direct the community towards genes that may be more likely than others to experience a controlled telomeric interaction, based on patterns in their chromosomal position across species. Comparing your genes of interest with the reference ranking may unveil new candidates for TPE-OLD that could be a valuable target for further experimental investigation.
+
+For more information on the methodology behind this tool, please see our <a href="https://doi.org/10.1093/nargab/lqae037" target="_blank">publication in NAR Genomics and Bioinformatics</a>.
 
 ## Overview
 
@@ -111,7 +113,9 @@ The reference genes are the main input to the computation. Some of the individua
 
 ## References
 
-A paper accompanying this web interface and the underlying methods is currently under peer review.
+This method and its implementation have been peer-reviewed and published in NAR Genomics and Bioinformatics. If you use this tool in your research or would like to refer to our methodology, please cite the following paper:
+
+Elias F Projahn, Georg Fuellen, Michael Walter, Steffen Möller, Proposing candidate genes under telomeric control based on cross-species position data, NAR Genomics and Bioinformatics, Volume 6, Issue 2, June 2024, lqae037, https://doi.org/10.1093/nargab/lqae037
 
 This project is based on data from [Ensembl](https://www.ensembl.org/index.html).
 
