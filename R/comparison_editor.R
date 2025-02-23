@@ -32,6 +32,18 @@ comparison_editor_ui <- function(id, options) {
         NS(id, "comparison_genes")
       ),
       gene_selector_ui(NS(id, "custom_genes"))
+    ),
+    tabsetPanel(
+      id = NS(id, "warning_panel"),
+      type = "hidden",
+      tabPanelBody(value = "hide"),
+      tabPanelBody(
+        value = "show",
+        div(
+          style = "color: orange; margin-bottom: 16px;",
+          htmlOutput(NS(id, "warnings"))
+        )
+      )
     )
   )
 }
@@ -49,18 +61,72 @@ comparison_editor_server <- function(id, preset, options) {
   moduleServer(id, function(input, output, session) {
     custom_gene_ids <- gene_selector_server("custom_genes")
 
+    comparison_warnings <- reactiveVal(character())
+    output$warnings <- renderUI({
+      HTML(paste(comparison_warnings(), collapse = "<br>"))
+    })
+
+    observe({
+      updateTabsetPanel(
+        session,
+        "warning_panel",
+        selected = if (is.null(comparison_warnings())) "hide" else "show"
+      )
+    })
+
     reactive({
-      if (input$comparison_genes == "Random genes") {
-        preset <- preset()
-        gene_pool <- preset$gene_ids
-        reference_gene_ids <- preset$reference_gene_ids
-        gene_pool <- gene_pool[!gene_pool %chin% reference_gene_ids]
+      new_warnings <- character()
+
+      preset <- preset()
+      gene_pool <- preset$gene_ids
+      reference_gene_ids <- preset$reference_gene_ids
+      gene_pool <- gene_pool[!gene_pool %chin% reference_gene_ids]
+
+      gene_ids <- if (input$comparison_genes == "Random genes") {
         gene_pool[sample(length(gene_pool), length(reference_gene_ids))]
       } else if (input$comparison_genes == "Your genes") {
         custom_gene_ids()
       } else {
         options$comparison_gene_sets[[input$comparison_genes]]
       }
+
+      excluded_reference_gene_ids <-
+        gene_ids[gene_ids %chin% reference_gene_ids]
+
+      if (length(excluded_reference_gene_ids) > 0) {
+        excluded_reference_genes <-
+          geposan::genes[id %chin% excluded_reference_gene_ids]
+        excluded_reference_genes[is.na(name), name := id]
+
+        new_warnings <- c(new_warnings, paste0(
+          "The following genes have been excluded because they are already ",
+          "part of the reference genes: ",
+          paste(
+            excluded_reference_genes$name,
+            collapse = ", "
+          )
+        ))
+      }
+
+      excluded_gene_ids <- gene_ids[!gene_ids %chin% gene_pool]
+
+      if (length(excluded_gene_ids) > 0) {
+        excluded_genes <-
+          geposan::genes[id %chin% excluded_gene_ids]
+        excluded_genes[is.na(name), name := id]
+
+        new_warnings <- c(new_warnings, paste0(
+          "The following genes are not present in the results: ",
+          paste(
+            excluded_genes$name,
+            collapse = ", "
+          )
+        ))
+      }
+
+      comparison_warnings(new_warnings)
+
+      gene_ids[!gene_ids %chin% reference_gene_ids & gene_ids %chin% gene_pool]
     })
   })
 }

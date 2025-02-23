@@ -196,7 +196,6 @@ preset_editor_server <- function(id, options) {
         ),
         warning = function(w) {
           new_warnings <<- c(new_warnings, w$message)
-
         }
       )
 
