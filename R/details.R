@@ -86,19 +86,6 @@ details_server <- function(id, options, results) {
       "Percentile"
     )
 
-    output_data <- reactive({
-      filtered_results()[, ..columns][
-        ,
-        distance := paste0(
-          format(
-            round(distance / 1000000, digits = 2),
-            nsmall = 2,
-          ),
-          " Mbp"
-        )
-      ]
-    })
-
     output$download <- downloadHandler(
       filename = "geposan_filtered_results.csv",
       content = \(file) fwrite(filtered_results()[, ..columns], file = file),

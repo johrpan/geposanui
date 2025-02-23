@@ -32,7 +32,31 @@ results_ui <- function(id, options) {
             plotly::plotlyOutput(
               NS(id, "rank_plot"),
               width = "100%",
-              height = "600px"
+              height = "500px"
+            )
+          ),
+          tabsetPanel(
+            id = NS(id, "comparison_results_panel"),
+            type = "hidden",
+            tabPanelBody(value = "hide"),
+            tabPanelBody(
+              value = "show",
+              div(
+                style = paste0(
+                  "display: flex; gap: 16px; align-items: center; ",
+                  "margin-top: 16px"
+                ),
+                div("Detailed results for the selected comparison genes"),
+                downloadButton(
+                  NS(id, "download_comparison_results"),
+                  "Download CSV",
+                  class = "btn-outline-primary"
+                )
+              ),
+              div(
+                style = "margin-top: 16px; margin-bottom: 8px;",
+                DT::DTOutput(NS(id, "comparison_results"))
+              )
             )
           )
         ),
@@ -245,6 +269,73 @@ results_server <- function(id, options, analysis) {
       geposan::plot_scores(ranking(), gene_sets = gene_sets)
     })
 
+    observe({
+      updateTabsetPanel(
+        session,
+        "comparison_results_panel",
+        selected = if (length(comparison_gene_ids()) > 0) "show" else "hide"
+      )
+    })
+
+    methods <- options$methods
+    method_ids <- sapply(methods, function(method) method$id)
+    method_names <- sapply(methods, function(method) method$name)
+
+    columns <- c(
+      "rank",
+      "gene",
+      "name",
+      "chromosome",
+      "distance",
+      method_ids,
+      "score",
+      "percentile"
+    )
+
+    column_names <- c(
+      "",
+      "Gene",
+      "",
+      "Chr.",
+      "Distance",
+      method_names,
+      "Score",
+      "Percentile"
+    )
+
+    results_filtered_comparison <- reactive({
+      results()[gene %chin% comparison_gene_ids()]
+    })
+
+    output$download_comparison_results <- downloadHandler(
+      filename = "geposan_results_custom.csv",
+      content = \(file) fwrite(
+        results_filtered_comparison()[, ..columns],
+        file = file
+      ),
+      contentType = "text/csv"
+    )
+
+    output$comparison_results <- DT::renderDT({
+      data <- results_filtered_comparison()[, ..columns]
+      data[, distance := glue::glue(
+        "{format(round(distance / 1000000, digits = 2), nsmall = 2)} Mbp"
+      )]
+
+      DT::datatable(
+        data,
+        rownames = FALSE,
+        colnames = column_names,
+        options = list(
+          rowCallback = js_link(),
+          columnDefs = list(list(visible = FALSE, targets = 2)),
+          pageLength = 25
+        )
+      ) |>
+        DT::formatRound(c(method_ids, "score"), digits = 4) |>
+        DT::formatPercentage("percentile", digits = 2)
+    })
+
     output$rankings_plot <- plotly::renderPlotly({
       preset <- preset()
 
@@ -360,7 +451,7 @@ results_server <- function(id, options, analysis) {
         preset()$reference_gene_ids
       )
 
-      comparison <- if (!is.null(comparison_gene_ids())) {
+      comparison <- if (length(comparison_gene_ids()) > 0) {
         geposan::compare(ranking(), comparison_gene_ids())
       }
 
